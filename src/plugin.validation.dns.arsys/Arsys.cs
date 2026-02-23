@@ -84,7 +84,12 @@ namespace PKISharp.WACS.Plugins.ValidationPlugins
             try
             {
                 var client = await GetClient(record.Authority.Domain);
-                await client.CreateTxtRecord(record.Authority.Domain, record.Value);
+                var res = await client.CreateTxtRecord(record.Authority.Domain, record.Value);
+                if (res.@return.errorMsg != "")
+                {
+                    _log.Error("Arsys DNS error when attempting to create record: ${error}", res.@return.errorMsg);
+                    return false;
+                }
                 return true;
             }
             catch (Exception ex)
@@ -104,11 +109,15 @@ namespace PKISharp.WACS.Plugins.ValidationPlugins
             try
             {
                 var client = await GetClient(record.Authority.Domain);
-                await client.DeleteTxtRecord(record.Authority.Domain, record.Value);
+                var res = await client.DeleteTxtRecord(record.Authority.Domain, record.Value);
+                if (res.@return.errorMsg != "")
+                {
+                    _log.Error("Arsys DNS error when attempting to delete record: ${error}", res.@return.errorMsg);
+                }
             }
             catch (Exception ex)
             {
-                _log.Warning(ex, $"Unable to delete record");
+                _log.Warning(ex, $"Unhandled exception when attempting to delete record");
             }
         }
     }
